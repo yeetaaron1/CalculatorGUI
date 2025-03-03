@@ -1,9 +1,12 @@
 package oi.yeetaaron1;
 
 import javax.swing.*;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class CalculatorGUI {
@@ -32,6 +35,14 @@ public class CalculatorGUI {
         textField.setFont(new Font("Arial", Font.BOLD, 24));
         textField.setHorizontalAlignment(JTextField.RIGHT);
         textField.addActionListener(new ButtonClickListener());  // Allow typing directly in the text field
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    processInput();
+                }
+            }
+        });
         topPanel.add(textField, BorderLayout.CENTER);
 
         frame.add(topPanel, BorderLayout.NORTH);
@@ -145,6 +156,55 @@ public class CalculatorGUI {
             historyText.append(equation).append("\n");
         }
         historyArea.setText(historyText.toString());
+    }
+
+    private void processInput() {
+        String input = textField.getText().trim();
+        if (input.isEmpty()) {
+            return;
+        }
+
+        try {
+            // Handle basic arithmetic expressions (e.g., 1*2, 3+5)
+            String[] operators = {"+", "-", "*", "/"};
+            for (String op : operators) {
+                if (input.contains(op)) {
+                    String[] operands = input.split("\\" + op);
+                    num1 = Double.parseDouble(operands[0].trim());
+                    num2 = Double.parseDouble(operands[1].trim());
+                    operator = op;
+
+                    switch (operator) {
+                        case "+":
+                            result = num1 + num2;
+                            break;
+                        case "-":
+                            result = num1 - num2;
+                            break;
+                        case "*":
+                            result = num1 * num2;
+                            break;
+                        case "/":
+                            if (num2 == 0) {
+                                textField.setText("Error");
+                                return;
+                            }
+                            result = num1 / num2;
+                            break;
+                    }
+                    textField.setText(String.valueOf(result));
+                    historyLabel.setText(num1 + " " + operator + " " + num2 + " =");
+                    // Add to history
+                    history.add(num1 + " " + operator + " " + num2 + " = " + result);
+                    updateHistoryArea();
+                    return;
+                }
+            }
+            // Handle invalid input
+            textField.setText("Invalid expression");
+        } catch (Exception ex) {
+            textField.setText("Error");
+        }
     }
 
     public static void main(String[] args) {
